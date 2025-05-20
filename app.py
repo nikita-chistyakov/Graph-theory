@@ -13,7 +13,7 @@ import time
 from collections import defaultdict
 
 # Import the Dijkstra implementation
-from dijkstra import dijkstra_step_by_step, reconstruct_path, EXAMPLE_GRAPHS
+from dijkstra2 import dijkstra_step_by_step, reconstruct_path, EXAMPLE_GRAPHS
 
 # Title and description
 st.title("Dijkstra's Algorithm Visualization")
