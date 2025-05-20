@@ -1,11 +1,19 @@
+"""
+Dijkstra's Algorithm Visualization App
+
+A Streamlit application for visualizing Dijkstra's algorithm on graphs.
+This module focuses on the UI and visualization, while the algorithm 
+implementation is imported from dijkstra.py.
+"""
+
 import streamlit as st
 import networkx as nx
 import matplotlib.pyplot as plt
-import numpy as np
-from collections import defaultdict
-import heapq
-from typing import Dict, List, Tuple, Set, Optional
 import time
+from collections import defaultdict
+
+# Import the Dijkstra implementation
+from dijkstra import dijkstra_step_by_step, reconstruct_path, EXAMPLE_GRAPHS
 
 # Title and description
 st.title("Dijkstra's Algorithm Visualization")
@@ -13,139 +21,6 @@ st.write("""
 This app demonstrates how Dijkstra's algorithm finds the shortest path between nodes in a graph.
 You can customize the graph, select start and end nodes, and watch the algorithm in action.
 """)
-
-# Dijkstra's algorithm implementation
-def dijkstra(graph: Dict[str, Dict[str, int]], start: str, end: str = None, step_by_step: bool = False):
-    """
-    Implementation of Dijkstra's algorithm with optional step-by-step visualization.
-    
-    Args:
-        graph: A dictionary where keys are node names and values are dictionaries
-               mapping neighboring nodes to edge weights.
-        start: The starting node name.
-        end: Optional end node for early termination.
-        step_by_step: If True, yields intermediate states for visualization.
-        
-    Returns or Yields:
-        When step_by_step is False, returns a tuple containing:
-        - A dictionary mapping each node to its shortest distance from the start node
-        - A dictionary mapping each node to its predecessor in the shortest path
-        When step_by_step is True, yields a tuple containing:
-        - Current state (distances, predecessors, current_node, visited, queue)
-    """
-    # Initialize distances with infinity for all nodes except the start node
-    distances = {node: float('infinity') for node in graph}
-    distances[start] = 0
-    
-    # Initialize predecessors dictionary to track the path
-    predecessors = {node: None for node in graph}
-    
-    # Priority queue to store vertices that need to be processed
-    # Format: (distance, node)
-    priority_queue = [(0, start)]
-    
-    # Set to keep track of visited nodes
-    visited = set()
-    
-    if step_by_step:
-        # Initial state
-        yield (distances.copy(), predecessors.copy(), None, visited.copy(), 
-               [(0, start)], set(), None)
-    
-    while priority_queue:
-        # Get the node with the smallest distance
-        current_distance, current_node = heapq.heappop(priority_queue)
-        
-        # Skip if already visited
-        if current_node in visited:
-            continue
-            
-        # Check if we've reached the destination
-        if end and current_node == end:
-            if step_by_step:
-                yield (distances.copy(), predecessors.copy(), current_node, 
-                       visited.copy(), [(d, n) for d, n in priority_queue], 
-                       set(), None)
-            break
-            
-        # Mark the current node as visited
-        visited.add(current_node)
-        
-        if current_distance > distances[current_node]:
-            continue
-            
-        # For step-by-step, yield current state before processing neighbors
-        if step_by_step:
-            yield (distances.copy(), predecessors.copy(), current_node, 
-                   visited.copy(), [(d, n) for d, n in priority_queue], 
-                   set(), None)
-        
-        # Check all neighbors
-        for neighbor, weight in graph[current_node].items():
-            if neighbor in visited:
-                continue
-                
-            # Calculate new distance
-            distance = current_distance + weight
-            
-            # Current edge being considered
-            current_edge = (current_node, neighbor)
-            
-            # If we found a shorter path to the neighbor, update it
-            if distance < distances[neighbor]:
-                old_distance = distances[neighbor]
-                distances[neighbor] = distance
-                predecessors[neighbor] = current_node
-                heapq.heappush(priority_queue, (distance, neighbor))
-                
-                # For step-by-step, yield state after updating a neighbor
-                if step_by_step:
-                    yield (distances.copy(), predecessors.copy(), current_node, 
-                           visited.copy(), [(d, n) for d, n in priority_queue], 
-                           {neighbor}, current_edge)
-    
-    if not step_by_step:
-        return distances, predecessors
-
-def reconstruct_path(predecessors, start, end):
-    """Reconstruct the shortest path from start to end"""
-    path = []
-    current = end
-    
-    while current:
-        path.append(current)
-        current = predecessors[current]
-        if current == start:
-            path.append(current)
-            break
-            
-    return path[::-1]
-
-# Graph examples
-EXAMPLE_GRAPHS = {
-    "Simple Graph": {
-        'A': {'B': 4, 'C': 2},
-        'B': {'A': 4, 'C': 1, 'D': 5},
-        'C': {'A': 2, 'B': 1, 'D': 8, 'E': 10},
-        'D': {'B': 5, 'C': 8, 'E': 2, 'F': 6},
-        'E': {'C': 10, 'D': 2, 'F': 3},
-        'F': {'D': 6, 'E': 3},
-    },
-    "City Grid": {
-        'New York': {'Boston': 4, 'Washington': 5},
-        'Boston': {'New York': 4, 'Chicago': 9, 'Toronto': 8},
-        'Washington': {'New York': 5, 'Atlanta': 6, 'Dallas': 12},
-        'Chicago': {'Boston': 9, 'Seattle': 15, 'Denver': 8},
-        'Toronto': {'Boston': 8, 'Seattle': 18},
-        'Atlanta': {'Washington': 6, 'Dallas': 7, 'Miami': 5},
-        'Dallas': {'Washington': 12, 'Atlanta': 7, 'Denver': 9, 'Los Angeles': 12},
-        'Miami': {'Atlanta': 5},
-        'Denver': {'Chicago': 8, 'Dallas': 9, 'Seattle': 10, 'Los Angeles': 10, 'San Francisco': 12},
-        'Seattle': {'Chicago': 15, 'Toronto': 18, 'Denver': 10, 'San Francisco': 8},
-        'Los Angeles': {'Dallas': 12, 'Denver': 10, 'San Francisco': 6},
-        'San Francisco': {'Seattle': 8, 'Denver': 12, 'Los Angeles': 6}
-    }
-}
 
 # Choose graph
 graph_choice = st.selectbox(
@@ -240,6 +115,75 @@ with col2:
 animation_speed = st.slider("Animation Speed:", min_value=0.5, max_value=3.0, value=1.0, step=0.1)
 delay = 1.0 / animation_speed  # Convert to delay
 
+# Function to draw the current state of the graph
+def draw_graph(G, pos, distances, predecessors, current_node, visited, queue, updated_nodes, current_edge):
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    # Edge colors
+    edge_colors = {}
+    for u, v in G.edges():
+        if predecessors[v] == u:
+            edge_colors[(u, v)] = 'green'  # Shortest path edge
+        elif current_edge and (u, v) == current_edge:
+            edge_colors[(u, v)] = 'orange'  # Current edge being evaluated
+        else:
+            edge_colors[(u, v)] = 'gray'  # Default edge color
+    
+    # Draw edges with weights
+    for u, v, data in G.edges(data=True):
+        nx.draw_networkx_edges(G, pos, edgelist=[(u, v)], width=2, 
+                             edge_color=edge_colors.get((u, v), 'gray'), 
+                             ax=ax)
+        
+        # Edge labels (weights)
+        edge_labels = {(u, v): data['weight'] for u, v, data in G.edges(data=True)}
+        nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, ax=ax)
+    
+    # Node colors
+    node_colors = []
+    for node in G.nodes():
+        if node == start_node:
+            node_colors.append('lime')  # Start node
+        elif node == end_node:
+            node_colors.append('red')   # End node
+        elif node == current_node:
+            node_colors.append('yellow')  # Current node being processed
+        elif node in visited:
+            node_colors.append('lightblue')  # Visited node
+        elif node in updated_nodes:
+            node_colors.append('pink')  # Just updated node
+        else:
+            node_colors.append('white')  # Unvisited node
+    
+    # Draw nodes
+    nx.draw_networkx_nodes(G, pos, node_color=node_colors, edgecolors='black', node_size=700, ax=ax)
+    
+    # Node labels and distance labels
+    nx.draw_networkx_labels(G, pos, ax=ax)
+    
+    # Add distance labels above nodes
+    for node, (x, y) in pos.items():
+        distance = distances.get(node, float('infinity'))
+        distance_label = str(distance) if distance != float('infinity') else "∞"
+        ax.text(x, y + 0.1, f"d={distance_label}", 
+               horizontalalignment='center', fontsize=9)
+    
+    # Legend
+    legend_elements = [
+        plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='lime', markersize=10, label='Start Node'),
+        plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='red', markersize=10, label='End Node'),
+        plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='yellow', markersize=10, label='Current Node'),
+        plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='lightblue', markersize=10, label='Visited Node'),
+        plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='pink', markersize=10, label='Updated Node'),
+        plt.Line2D([0], [0], color='green', lw=2, label='Shortest Path Edge'),
+        plt.Line2D([0], [0], color='orange', lw=2, label='Edge Being Evaluated')
+    ]
+    ax.legend(handles=legend_elements, loc='upper left', bbox_to_anchor=(1, 1))
+    
+    plt.title("Dijkstra's Algorithm Visualization", fontsize=16)
+    plt.tight_layout()
+    return fig
+
 # Start visualization
 if st.button("Start Dijkstra's Algorithm"):
     # Create NetworkX graph
@@ -272,79 +216,9 @@ if st.button("Start Dijkstra's Algorithm"):
     
     # Run Dijkstra's algorithm step by step
     steps = 0
-    total_nodes_visited = 0
-    
-    # Function to draw the current state of the graph
-    def draw_graph(G, pos, distances, predecessors, current_node, visited, queue, updated_nodes, current_edge):
-        fig, ax = plt.subplots(figsize=(10, 6))
-        
-        # Edge colors
-        edge_colors = {}
-        for u, v in G.edges():
-            if predecessors[v] == u:
-                edge_colors[(u, v)] = 'green'  # Shortest path edge
-            elif current_edge and (u, v) == current_edge:
-                edge_colors[(u, v)] = 'orange'  # Current edge being evaluated
-            else:
-                edge_colors[(u, v)] = 'gray'  # Default edge color
-        
-        # Draw edges with weights
-        for u, v, data in G.edges(data=True):
-            nx.draw_networkx_edges(G, pos, edgelist=[(u, v)], width=2, 
-                                 edge_color=edge_colors.get((u, v), 'gray'), 
-                                 ax=ax)
-            
-            # Edge labels (weights)
-            edge_labels = {(u, v): data['weight'] for u, v, data in G.edges(data=True)}
-            nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, ax=ax)
-        
-        # Node colors
-        node_colors = []
-        for node in G.nodes():
-            if node == start_node:
-                node_colors.append('lime')  # Start node
-            elif node == end_node:
-                node_colors.append('red')   # End node
-            elif node == current_node:
-                node_colors.append('yellow')  # Current node being processed
-            elif node in visited:
-                node_colors.append('lightblue')  # Visited node
-            elif node in updated_nodes:
-                node_colors.append('pink')  # Just updated node
-            else:
-                node_colors.append('white')  # Unvisited node
-        
-        # Draw nodes
-        nx.draw_networkx_nodes(G, pos, node_color=node_colors, edgecolors='black', node_size=700, ax=ax)
-        
-        # Node labels and distance labels
-        nx.draw_networkx_labels(G, pos, ax=ax)
-        
-        # Add distance labels above nodes
-        for node, (x, y) in pos.items():
-            distance = distances.get(node, float('infinity'))
-            distance_label = str(distance) if distance != float('infinity') else "∞"
-            ax.text(x, y + 0.1, f"d={distance_label}", 
-                   horizontalalignment='center', fontsize=9)
-        
-        # Legend
-        legend_elements = [
-            plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='lime', markersize=10, label='Start Node'),
-            plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='red', markersize=10, label='End Node'),
-            plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='yellow', markersize=10, label='Current Node'),
-            plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='lightblue', markersize=10, label='Visited Node'),
-            plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='pink', markersize=10, label='Updated Node'),
-            plt.Line2D([0], [0], color='green', lw=2, label='Shortest Path Edge'),
-            plt.Line2D([0], [0], color='orange', lw=2, label='Edge Being Evaluated')
-        ]
-        ax.legend(handles=legend_elements, loc='upper left', bbox_to_anchor=(1, 1))
-        
-        plt.title("Dijkstra's Algorithm Visualization", fontsize=16)
-        plt.tight_layout()
-        return fig
     
     # Run the algorithm and visualize each step
-    for state in dijkstra(current_graph, start_node, end_node, step_by_step=True):
+    for state in dijkstra_step_by_step(current_graph, start_node, end_node):
         distances, predecessors, current_node, visited, queue, updated_nodes, current_edge = state
         steps += 1
         
