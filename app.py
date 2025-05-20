@@ -115,7 +115,7 @@ with col2:
 ##animation_speed = st.slider("Animation Speed:", min_value=0.5, max_value=3.0, value=1.0, step=0.1)
 ##delay = 1.0 / animation_speed  # Convert to delay
 
-animation_speed = st.slider("Animation Speed:", min_value=1.0, max_value=5.0, value=1.0, step=1.0)
+animation_speed = st.slider("Animation Speed:", min_value=1.0, max_value=5.0, value=1.0, step=0.1)
 delay = 0.02 / animation_speed
 
 
