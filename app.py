@@ -371,7 +371,3 @@ with st.expander("About Dijkstra's Algorithm"):
     - Flight scheduling
     - Robot navigation
     """)
-
-# Footer
-st.markdown("---")
-st.markdown("Created with Streamlit for Dijkstra's Algorithm Visualization")
