@@ -198,18 +198,18 @@ EXAMPLE_GRAPHS = {
         'F': {'D': 6, 'E': 3},
     },
     "City Grid": {
-        'New York': {'Boston': 4, 'Washington': 5},
-        'Boston': {'New York': 4, 'Chicago': 9, 'Toronto': 8},
-        'Washington': {'New York': 5, 'Atlanta': 6, 'Dallas': 12},
-        'Chicago': {'Boston': 9, 'Seattle': 15, 'Denver': 8},
-        'Toronto': {'Boston': 8, 'Seattle': 18},
-        'Atlanta': {'Washington': 6, 'Dallas': 7, 'Miami': 5},
-        'Dallas': {'Washington': 12, 'Atlanta': 7, 'Denver': 9, 'Los Angeles': 12},
-        'Miami': {'Atlanta': 5},
-        'Denver': {'Chicago': 8, 'Dallas': 9, 'Seattle': 10, 'Los Angeles': 10, 'San Francisco': 12},
-        'Seattle': {'Chicago': 15, 'Toronto': 18, 'Denver': 10, 'San Francisco': 8},
-        'Los Angeles': {'Dallas': 12, 'Denver': 10, 'San Francisco': 6},
-        'San Francisco': {'Seattle': 8, 'Denver': 12, 'Los Angeles': 6}
+        'New York': {'Boston': 215, 'Washington': 225},
+        'Boston': {'New York': 215, 'Chicago': 983, 'Toronto': 550},
+        'Washington': {'New York': 225, 'Atlanta': 638, 'Dallas': 1310},
+        'Chicago': {'Boston': 983, 'Seattle': 2064, 'Denver': 1003},
+        'Toronto': {'Boston': 550, 'Seattle': 2636},
+        'Atlanta': {'Washington': 638, 'Dallas': 781, 'Miami': 661},
+        'Dallas': {'Washington': 1310, 'Atlanta': 781, 'Denver': 794, 'Los Angeles': 1435},
+        'Miami': {'Atlanta': 661},
+        'Denver': {'Chicago': 1003, 'Dallas': 794, 'Seattle': 1306, 'Los Angeles': 1016, 'San Francisco': 1255},
+        'Seattle': {'Chicago': 2064, 'Toronto': 2636, 'Denver': 1306, 'San Francisco': 807},
+        'Los Angeles': {'Dallas': 1435, 'Denver': 1016, 'San Francisco': 383},
+        'San Francisco': {'Seattle': 807, 'Denver': 1255, 'Los Angeles': 383}
     }
 }
 
