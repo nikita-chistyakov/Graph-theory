@@ -1,5 +1,5 @@
 import streamlit as st
-from dijkstra_module import dijkstra, reconstruct_path, EXAMPLE_GRAPHS
+from dijkstra import dijkstra, reconstruct_path, EXAMPLE_GRAPHS
 
 st.title("Dijkstra's Algorithm Visualizer")
 
