@@ -112,8 +112,12 @@ with col2:
     end_node = st.selectbox("End node:", [n for n in nodes if n != start_node])
 
 # Speed control for visualization
-animation_speed = st.slider("Animation Speed:", min_value=0.5, max_value=3.0, value=1.0, step=0.1)
-delay = 1.0 / animation_speed  # Convert to delay
+##animation_speed = st.slider("Animation Speed:", min_value=0.5, max_value=3.0, value=1.0, step=0.1)
+##delay = 1.0 / animation_speed  # Convert to delay
+
+animation_speed = st.slider("Animation Speed:", min_value=1, max_value=5, value=1.0, step=1)
+delay = 0.1 / animation_speed
+
 
 # Function to draw the current state of the graph
 def draw_graph(G, pos, distances, predecessors, current_node, visited, queue, updated_nodes, current_edge):
